@@ -8,7 +8,7 @@
 import scrapy
 
 
-class NarouScraperItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class TextItem(scrapy.Item):
+    ncode_int = scrapy.Field()
+    episode_num = scrapy.Field()
+    text = scrapy.Field()
