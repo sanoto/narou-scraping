@@ -1,0 +1,8 @@
+Django
+djangorestframework
+gunicorn
+psycopg2
+psycopg2-binary
+Scrapy
+scrapyd
+scrapyd-client
