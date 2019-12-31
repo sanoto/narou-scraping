@@ -15,7 +15,7 @@ class WriterAdmin(admin.ModelAdmin):
 
 @admin.register(Novel)
 class NovelAdmin(admin.ModelAdmin):
-    list_display = ('title', 'ncode', 'ncode_int', 'writer', 'story', 'max_episode_num', 'detail')
+    list_display = ('title', 'ncode', 'ncode_int', 'writer', 'story', 'is_serial', 'max_episode_num', 'detail')
 
 
 @admin.register(Chapter)
@@ -25,7 +25,7 @@ class ChapterAdmin(admin.ModelAdmin):
 
 @admin.register(Episode)
 class EpisodeAdmin(admin.ModelAdmin):
-    list_display = ('novel', 'number', 'chapter', 'title', 'text', 'posted_at', 'fixed_at')
+    list_display = ('novel', 'number', 'chapter', 'title', 'foreword', 'body', 'afterword', 'posted_at', 'fixed_at')
 
 
 @admin.register(KeyWord)

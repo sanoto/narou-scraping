@@ -16,19 +16,20 @@ class Novel(models.Model):
     ncode = models.CharField(verbose_name='Nコード', max_length=10, primary_key=True)
     ncode_int = models.IntegerField(verbose_name='数字版Nコード', unique=True, blank=True)
     writer = models.ForeignKey(Writer, on_delete=models.CASCADE, related_name='novels', verbose_name='作者')
-    story = models.TextField(verbose_name='あらすじ')
+    story = models.TextField(verbose_name='あらすじ', blank=True, null=True)
+    is_serial = models.BooleanField(verbose_name='連載')
     max_episode_num = models.IntegerField(verbose_name='全話数')
 
 
 class Chapter(models.Model):
     novel = models.OneToOneField(Novel, on_delete=models.CASCADE, related_name='chapter', verbose_name='小説')
-    number = models.IntegerField(verbose_name='何章目か')
+    number = models.IntegerField(verbose_name='章')
     name = models.CharField(verbose_name='名前', max_length=500)
 
 
 class Episode(models.Model):
     novel = models.ForeignKey(Novel, on_delete=models.CASCADE, related_name='episodes', verbose_name='小説')
-    number = models.IntegerField(verbose_name='何話目か')
+    number = models.IntegerField(verbose_name='話')
     chapter = models.ForeignKey(
         Chapter,
         on_delete=models.SET_NULL,
@@ -37,8 +38,10 @@ class Episode(models.Model):
         blank=True,
         null=True,
     )
-    title = models.CharField(verbose_name='タイトル', max_length=500)
-    text = models.TextField(verbose_name='本文', blank=True, null=True)
+    title = models.CharField(verbose_name='タイトル', max_length=500, blank=True, null=True)
+    foreword = models.TextField(verbose_name='まえがき', blank=True, null=True)
+    body = models.TextField(verbose_name='本文')
+    afterword = models.TextField(verbose_name='あとがき', blank=True, null=True)
     posted_at = models.DateTimeField(verbose_name='投稿日時', blank=True, null=True)
     fixed_at = models.DateTimeField(verbose_name='最終改稿日時', blank=True, null=True)
 
@@ -99,7 +102,6 @@ class NovelDetail(models.Model):
     keywords = models.ManyToManyField(KeyWord, related_name='novels', verbose_name='キーワード')
     first_publication_date = models.DateTimeField(verbose_name='初回掲載日')
     last_publication_date = models.DateTimeField(verbose_name='最終掲載日')
-    is_serial = models.BooleanField(verbose_name='連載')
     length = models.IntegerField(verbose_name='文字数')
     is_stop = models.BooleanField(verbose_name='長期連載停止中')
     writer_device = models.IntegerField(verbose_name='投稿時使用端末', choices=WRITER_DEVICE)
