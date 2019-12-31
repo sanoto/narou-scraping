@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../../bowline/.idea/bowline.iml" filepath="$PROJECT_DIR$/../../bowline/.idea/bowline.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/narou-scraping.iml" filepath="$PROJECT_DIR$/.idea/narou-scraping.iml" />
     </modules>
   </component>

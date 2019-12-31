@@ -1,0 +1,70 @@
+version: '2'
+services:
+  https-portal:
+    image: steveltn/https-portal:1
+    depends_on:
+      - nginx
+    environment:
+      DOMAINS: 'localhost -> http://nginx:1204/'
+      # DOMAINS: 'localhost -> http://nginx:1204/, [IP_ADDRESS] -> http://nginx:1204/'
+      STAGE: 'local'
+      #STAGE: 'production'
+    ports:
+      - '80:80'
+      - '443:443'
+
+  nginx:
+    build: 
+      context: ./docker
+      dockerfile: NginxDockerfile
+    container_name: narou_nginx
+    depends_on:
+      - node
+    expose:
+      - "1204"
+    hostname: nginx
+    ports:
+      - "1204:1204"
+    volumes:
+      - "./docker/nginx/:/etc/nginx/"
+      - "staticdata:/opt/apps/static/"
+      - "./log:/var/log/nginx/"
+
+  node:
+    build:
+      context: ./docker/
+      dockerfile: NodeDockerfile
+    container_name: narou_node
+    depends_on:
+      - python
+    hostname: node
+    ports: 
+      - "3000:3000"
+    command: bash -c "yarn install && yarn dev --hostname 0.0.0.0 --port 3000"
+#    command: bash -c "yarn install && yarn build && yarn start --hostname 0.0.0.0 --port 3000"
+    environment:
+      NODE_MAX_OLD_SPACE_SIZE: 12288
+#      BASE_URL: "https://[IP_ADDRESS]"
+    volumes:
+      - "./nuxt:/src"
+    working_dir: /src
+
+  python:
+    build:
+      context: ./
+      dockerfile: ./docker/PythonDockerfile
+    container_name: narou_python
+#    depends_on:
+    expose:
+      - "8000"
+    hostname: python
+    ports:
+     - "8000:8000"
+    command: bash -c "sleep 5; python manage.py makemigrations && python manage.py migrate --run-syncdb && python manage.py collectstatic --noinput && gunicorn narou_scraping.wsgi -b 0.0.0.0:8000"
+    volumes:
+      - .:/src
+      - "staticdata:/opt/static/"
+    working_dir: /src
+
+volumes:
+  staticdata:
