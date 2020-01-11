@@ -27,7 +27,7 @@ services:
       - "1204:1204"
     volumes:
       - "./docker/nginx/:/etc/nginx/"
-      - "staticdata:/opt/apps/static/"
+      - "staticdata:/opt/static/"
       - "./log:/var/log/nginx/"
 
   node:
