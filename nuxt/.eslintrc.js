@@ -20,6 +20,11 @@ module.exports = {
   // add your custom rules here
   rules: {
     'semi': [2, 'never'],
+    'no-unused-vars': ['warn', {
+      'vars': 'all',
+      'args': 'after-used',
+      'ignoreRestSiblings': false
+    }],
     'no-console': 'off',
     'vue/max-attributes-per-line': 'off',
     'prettier/prettier': ['error', { 'semi': false }]
