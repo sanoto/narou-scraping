@@ -9,6 +9,7 @@ module.exports = {
   },
   extends: [
     '@nuxtjs',
+    '@nuxtjs/eslint-config-typescript',
     'prettier',
     'prettier/vue',
     'plugin:prettier/recommended',
@@ -27,6 +28,7 @@ module.exports = {
     }],
     'no-console': 'off',
     'vue/max-attributes-per-line': 'off',
-    'prettier/prettier': ['error', { 'semi': false }]
+    'prettier/prettier': ['error', { 'semi': false }],
+    '@typescript-eslint/no-unused-vars': false
   }
 }
