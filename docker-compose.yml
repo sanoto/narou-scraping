@@ -14,7 +14,7 @@ services:
       - '443:443'
 
   nginx:
-    build: 
+    build:
       context: ./docker
       dockerfile: NginxDockerfile
     container_name: narou_nginx
@@ -38,7 +38,7 @@ services:
     depends_on:
       - python
     hostname: node
-    ports: 
+    ports:
       - "3000:3000"
     command: bash -c "yarn install && yarn dev --hostname 0.0.0.0 --port 3000"
 #    command: bash -c "yarn install && yarn build && yarn start --hostname 0.0.0.0 --port 3000"
