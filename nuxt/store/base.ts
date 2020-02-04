@@ -13,6 +13,8 @@ import { $axios } from '~/utils/api'
 
 export type Params = { [key: string]: any }
 
+// TODO: 継承が使えないのでここをMutateとActionのターミナルにする
+// TODO: 対象の子モジュールに対象のAction/Mutateがなかったら共通のものを使用する
 export abstract class BaseRestModule<
   Model extends Params,
   PK extends keyof any
