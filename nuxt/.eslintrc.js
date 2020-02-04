@@ -4,15 +4,13 @@ module.exports = {
     browser: true,
     node: true
   },
-  parserOptions: {
-    parser: 'babel-eslint'
-  },
   extends: [
     '@nuxtjs',
     '@nuxtjs/eslint-config-typescript',
     'prettier',
     'prettier/vue',
     'plugin:prettier/recommended',
+    'prettier/@typescript-eslint',
     'plugin:nuxt/recommended'
   ],
   plugins: [
@@ -21,14 +19,24 @@ module.exports = {
   // add your custom rules here
   rules: {
     'semi': [2, 'never'],
-    'no-unused-vars': ['warn', {
-      'vars': 'all',
-      'args': 'after-used',
-      'ignoreRestSiblings': false
-    }],
     'no-console': 'off',
     'vue/max-attributes-per-line': 'off',
-    'prettier/prettier': ['error', { 'semi': false }],
-    '@typescript-eslint/no-unused-vars': false
+
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-vars': 'off',
+    "no-extra-semi": "off",
+    "@typescript-eslint/no-extra-semi": "error",
+    "quotes": "off",
+    "@typescript-eslint/quotes": ["error", "single", {
+      "avoidEscape": true,
+      "allowTemplateLiterals": true
+    }],
+
+    'prettier/prettier': ['error', {
+      'semi': false,
+      "arrowParens": "always",
+      "singleQuote": true,
+      "trailingComma": "es5"
+    }]
   }
 }

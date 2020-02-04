@@ -1,1 +1,1 @@
-FROM node:10.16.3-stretch
+FROM node:latest

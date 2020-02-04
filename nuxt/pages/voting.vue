@@ -10,9 +10,9 @@
         </v-card-text>
         <v-list>
           <v-list-item
-            v-for="voting in votingList"
-            :key="voting.id"
-            :to="voting.id"
+            v-for="(voting, id) of votingList"
+            :key="id"
+            :to="id"
             router
             exact
           >
@@ -37,22 +37,18 @@
   </v-layout>
 </template>
 
-<script>
-import { mapState, mapActions } from 'vuex'
+<script lang="ts">
+import { Component, Prop, Vue } from 'nuxt-property-decorator'
+import { votingStore } from '~/store'
 
-export default {
-  async fetch({ store }) {
-    // `fetch` メソッドはページの描画前にストアを満たすために使用されます
-    await store.dispatch('vote/getValues', 'votingList')
-  },
-  computed: {
-    ...mapState('vote', ['parsers', 'votingList', 'votes', 'writerDetail']),
-    ...mapActions('vote', [
-      'getValues',
-      'addValue',
-      'updateValue',
-      'deleteValue'
-    ])
+@Component
+export default class VotingPage extends Vue {
+  async fetch() {
+    await votingStore.fetch()
+  }
+
+  get votingList() {
+    return votingStore.data
   }
 }
 </script>

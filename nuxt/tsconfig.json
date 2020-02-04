@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "experimentalDecorators": true,
     "target": "es2018",
     "module": "esnext",
     "moduleResolution": "node",
@@ -24,10 +25,12 @@
     },
     "types": [
       "@types/node",
-      "@nuxt/types"
+      "@nuxt/types",
+      "@nuxtjs/axios"
     ]
   },
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "strictFunctionTypes":false // バグ回避のためなのでいつか削除
 }

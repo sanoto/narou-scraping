@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  name: 'VoteApi'
+  name: 'VoteApi',
 }
 </script>
 

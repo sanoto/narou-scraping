@@ -3,8 +3,8 @@
     <v-navigation-drawer v-model="drawer" clipped fixed app>
       <v-list>
         <v-list-item
-          v-for="(item, i) in navItems"
-          :key="i"
+          v-for="item of navItems"
+          :key="item.id"
           :to="item.to"
           router
           exact
@@ -32,17 +32,38 @@
   </v-app>
 </template>
 
-<script>
-import { mapState, mapActions } from 'vuex'
+<script lang="ts">
+import { Component, Prop, Vue } from 'nuxt-property-decorator'
+import { generalStore } from '~/store'
 
-export default {
-  data() {
-    return {
-      drawer: false
-    }
-  },
-  computed: {
-    ...mapState(['title', 'navItems'])
+export interface NavItem {
+  id: number
+  icon: string
+  title: string
+  to: string
+}
+
+@Component
+export default class VotingPage extends Vue {
+  navItems: NavItem[] = [
+    {
+      id: 1,
+      icon: 'mdi-apps',
+      title: 'トップ',
+      to: '/',
+    },
+    {
+      id: 2,
+      icon: 'mdi-chart-bubble',
+      title: '人気投票集計',
+      to: '/voting',
+    },
+  ]
+
+  drawer: boolean = false
+
+  get title() {
+    return generalStore.title
   }
 }
 </script>

@@ -5,6 +5,10 @@ const path = require('path')
 
 export default {
   mode: 'spa',
+  server: {
+    port: 3000,
+    host: '0.0.0.0',
+  },
   /*
    ** Headers of the page
    */
@@ -17,10 +21,10 @@ export default {
       {
         hid: 'description',
         name: 'description',
-        content: process.env.npm_package_description || ''
-      }
+        content: process.env.npm_package_description || '',
+      },
     ],
-    link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }]
+    link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
   /*
    ** Customize the progress-bar color
@@ -44,7 +48,6 @@ export default {
     '@nuxtjs/stylelint-module',
     '@nuxtjs/vuetify',
     '@nuxt/typescript-build',
-    'nuxt-typed-vuex'
   ],
   /*
    ** Nuxt.js modules
@@ -52,9 +55,9 @@ export default {
   modules: [
     // Doc: https://axios.nuxtjs.org/usage
     '@nuxtjs/axios',
-    '@nuxtjs/pwa',
+    // '@nuxtjs/pwa',
     // Doc: https://github.com/nuxt-community/dotenv-module
-    '@nuxtjs/dotenv'
+    '@nuxtjs/dotenv',
   ],
   /*
    ** Axios module configuration
@@ -77,15 +80,15 @@ export default {
           info: colors.teal.lighten1,
           warning: colors.amber.base,
           error: colors.deepOrange.accent4,
-          success: colors.green.accent3
-        }
-      }
-    }
+          success: colors.green.accent3,
+        },
+      },
+    },
   },
   typescript: {
     typeCheck: {
-      eslint: true
-    }
+      eslint: true,
+    },
   },
   /*
    ** Build configuration
@@ -94,17 +97,21 @@ export default {
     /*
      ** You can extend webpack config here
      */
-    transpile: [
-      /typed-vuex/,
-    ],
-    extend(config, ctx) {}
+    analyze: true,
+    babel: {
+      plugins: [
+        ['@babel/plugin-proposal-decorators', { legacy: true }],
+        ['@babel/plugin-proposal-class-properties', { loose: true }],
+      ],
+    },
+    extend(config, ctx) {},
   },
   resolve: {
     extensions: ['.js', '.json', '.vue', '.ts'],
     root: path.resolve(__dirname),
     alias: {
       '@': path.resolve(__dirname),
-      '~': path.resolve(__dirname)
-    }
-  }
+      '~': path.resolve(__dirname),
+    },
+  },
 }
