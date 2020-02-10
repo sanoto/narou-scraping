@@ -6,13 +6,13 @@
           投票集計ページ
         </v-card-title>
         <v-card-text>
-          <p>{{ votingList[0].name }}</p>
+          <p>{{ $vxm.voting.data[0].name }}</p>
         </v-card-text>
         <v-list>
           <v-list-item
-            v-for="(voting, id) of votingList"
-            :key="id"
-            :to="id"
+            v-for="voting of $vxm.voting.data"
+            :key="voting.id"
+            :to="voting.id"
             router
             exact
           >
@@ -38,19 +38,17 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'nuxt-property-decorator'
-import { votingStore } from '~/store'
+import { Context } from '@nuxt/types'
+import { Component, Vue } from 'nuxt-property-decorator'
 
-@Component
-export default class VotingPage extends Vue {
-  async fetch() {
-    await votingStore.fetch()
-  }
+import { StoreName } from '@/store/base'
 
-  get votingList() {
-    return votingStore.data
-  }
-}
+@Component({
+  async fetch({ app }: Context) {
+    await app.$vxm.django.fetch(StoreName.voting)
+  },
+})
+export default class VotingPage extends Vue {}
 </script>
 
 <style scoped></style>

@@ -1,20 +1,12 @@
-import { VuexModule, Module, Mutation, Action } from 'vuex-module-decorators'
-import { DateTime } from 'luxon'
+import { Module, VuexModule } from 'vuex-class-component'
 
-import { BaseRestModule } from '~/store/base'
+import { DjangoModule } from '~/store/base'
+import { Voting } from '~/store/django-types'
 
-export interface Voting {
-  name: string
-  novel: number
-  startTime: DateTime
-  endTime: DateTime
-  inImpression: boolean
-  inWriterReport: boolean
-  parsers: number[]
-  participants: number[]
-}
-
-@Module({ stateFactory: true, namespaced: true, name: 'voting' })
-export class VotingModule extends BaseRestModule<Voting, number> {
+@Module({ target: 'nuxt', namespacedPath: 'voting' })
+export class VotingStore extends VuexModule implements DjangoModule {
+  data: Voting[] = []
+  pkName: string = 'id'
   url: string = 'api/votes/voting_list/'
+  readonlyParams: string[] = ['id']
 }

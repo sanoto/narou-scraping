@@ -1,102 +1,131 @@
-import { VuexModule, Module, Mutation, Action } from 'vuex-module-decorators'
-import { renameKeysWith } from 'ramda-adjunct'
-import camelCase from 'lodash/camelCase'
-import snakeCase from 'lodash/snakeCase'
-import omit from 'ramda/es/omit'
-import merge from 'ramda/es/merge'
-import assoc from 'ramda/es/assoc'
+import { mutation, action, Module, VuexModule } from 'vuex-class-component/dist'
 import map from 'ramda/es/map'
-import prop from 'ramda/es/prop'
-import fromPairs from 'ramda/es/fromPairs'
 
-import { $axios } from '~/utils/api'
+import { $axios } from '@/utils/api'
+import {
+  appendToList,
+  updateList,
+  removeFromList,
+  createModel,
+  createParams,
+} from '@/utils/ramda-ex'
+import { Params, Model } from '@/store/django-types'
+import { VoteStore } from '@/store/vote/vote'
+import { VotingStore } from '@/store/vote/voting'
+import { ParserStore } from '@/store/vote/parser'
 
-export type Params = { [key: string]: any }
+export interface DjangoModule {
+  data: Params[]
+  pkName: string // = 'id'
+  url: string // = 'api/hoge_app/hoge_model/'
+  readonlyParams: string[] // = ['id']
+}
 
-// TODO: 継承が使えないのでここをMutateとActionのターミナルにする
-// TODO: 対象の子モジュールに対象のAction/Mutateがなかったら共通のものを使用する
-export abstract class BaseRestModule<
-  Model extends Params,
-  PK extends keyof any
-> extends VuexModule {
-  data = <Record<PK, Model>>{}
-  pkName: string = 'id'
-  url: string = 'api/'
-  readonlyParams: string[] = ['id']
+export const enum StoreName {
+  voting = 'voting',
+  vote = 'vote',
+  parser = 'parser',
+}
 
-  @Mutation
-  setData(data: Record<PK, Model>) {
-    this.data = data
+@Module({ target: 'nuxt', namespacedPath: 'django' })
+export class DjangoRestStore extends VuexModule {
+  [StoreName.voting] = VotingStore.CreateSubModule(VotingStore);
+  [StoreName.vote] = VoteStore.CreateSubModule(VoteStore);
+  [StoreName.parser] = ParserStore.CreateSubModule(ParserStore)
+
+  @mutation setData(params: { storeName: StoreName; data: Model[] }) {
+    this[params.storeName].data = params.data
   }
 
-  @Mutation
-  updateData(data: Record<PK, Model>) {
-    this.setData(merge(this.data, data))
+  @mutation addInstance(params: { storeName: StoreName; instance: Model }) {
+    this[params.storeName].data = appendToList(
+      params.instance,
+      this[params.storeName].data
+    )
   }
 
-  @Mutation
-  setInstance(pk: PK, instance: Model) {
-    this.setData(assoc(pk, instance, this.data))
+  @mutation updateInstance(params: { storeName: StoreName; instance: Model }) {
+    const pkName = this[params.storeName].pkName
+    this[params.storeName].data = updateList(
+      params.instance,
+      pkName,
+      this[params.storeName].data
+    )
   }
 
-  @Mutation
-  removeInstance(pk: PK) {
-    this.setData(<Record<PK, Model>>omit([pk], this.data))
+  @mutation
+  removeInstance(params: { storeName: StoreName; pk: string }) {
+    const pkName = this[params.storeName].pkName
+    this[params.storeName].data = removeFromList(
+      params.pk,
+      pkName,
+      this[params.storeName].data
+    )
   }
 
-  createModel(resultParams: Params): [PK, Model] {
-    const pk: PK = prop(this.pkName, resultParams)
-    const idRemoved: Params = omit([this.pkName], resultParams)
-    const instance = <Model>renameKeysWith(camelCase, idRemoved)
-    return [pk, instance]
-  }
-
-  createParams(instance: Model | Params): Params {
-    const snakeParams = renameKeysWith(snakeCase, instance)
-    return omit(this.readonlyParams, snakeParams)
-  }
-
-  @Action
-  async fetch() {
+  @action
+  async fetch(storeName: StoreName) {
     const result: Params[] = await $axios
-      .$get(this.url)
-      .then((response) => response.data.results)
+      .$get(this[storeName].url)
+      .then((response) => response.results)
       .catch((error) => {
         console.warn(error)
       })
-    this.setData(<Record<PK, Model>>fromPairs(map(this.createModel, result)))
+    this.setData({
+      storeName,
+      data: map((a) => createModel(a, this[storeName].pkName), result),
+    })
   }
 
-  @Action
-  async add(instance: Model) {
+  @action
+  async add(params: { storeName: StoreName; instance: Model }) {
     const result: Params = await $axios
-      .$post(this.url, this.createParams(instance))
-      .then((response) => response.data)
+      .$post(
+        this[params.storeName].url,
+        createParams(params.instance, this[params.storeName].readonlyParams)
+      )
+      .then((response) => response)
       .catch((error) => {
         console.warn(error)
       })
-    this.setInstance(...this.createModel(result))
+    this.addInstance({
+      storeName: params.storeName,
+      instance: createModel(result, this[params.storeName].pkName),
+    })
   }
 
-  @Action
-  async update(pk: PK, partialInstance: Params) {
+  @action
+  async update(params: {
+    storeName: StoreName
+    pk: string
+    partialInstance: Params
+  }) {
     const result: Params = await $axios
-      .$patch(`${this.url}${pk}/`, this.createParams(partialInstance))
-      .then((response) => response.data)
+      .$patch(
+        `${this[params.storeName].url}${params.pk}/`,
+        createParams(
+          params.partialInstance,
+          this[params.storeName].readonlyParams
+        )
+      )
+      .then((response) => response)
       .catch((error) => {
         console.warn(error)
       })
-    this.setInstance(...this.createModel(result))
+    this.updateInstance({
+      storeName: params.storeName,
+      instance: createModel(result, this[params.storeName].pkName),
+    })
   }
 
-  @Action
-  async delete(pk: PK) {
+  @action
+  async delete(params: { storeName: StoreName; pk: string }) {
     await $axios
-      .$delete(`${this.url}${pk}/`)
-      .then((response) => response.data)
+      .$delete(`${this[params.storeName].url}${params.pk}/`)
+      .then((response) => response)
       .catch((error) => {
         console.warn(error)
       })
-    this.removeInstance(pk)
+    this.removeInstance({ storeName: params.storeName, pk: params.pk })
   }
 }
