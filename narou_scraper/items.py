@@ -20,6 +20,7 @@ class NovelItem(scrapy.Item):
     ncode_int = scrapy.Field()
     writer_id = scrapy.Field()
     writer_name = scrapy.Field()
+    writer_nickname = scrapy.Field()
     story = scrapy.Field()  # 短編だと取得できない
     is_serial = scrapy.Field()
     max_episode_num = scrapy.Field()

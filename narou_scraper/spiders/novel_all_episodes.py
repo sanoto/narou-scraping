@@ -1,31 +1,62 @@
 # -*- coding: utf-8 -*-
+from math import ceil
+
 import scrapy
 from scrapy import signals
 from scrapy.http import HtmlResponse, Request
 from scrapy.selector import Selector, SelectorList
+from scrapy.exceptions import CloseSpider
 from itertools import zip_longest
 from logging import Logger
 from typing import List
+import datetime
+from django.db.models import Q
+import tweepy
 
 from narou_scraper.items import NovelItem, ChapterItem, EpisodeItem
 from narou_scraper.handler import spider_error
+from narou.models import Episode, Novel
+from narou_scraping.local_settings import TWITTER_CK, TWITTER_CS, TWITTER_AT, TWITTER_AS
+from narou_scraping.settings import NCODE, INTERVAL_MINUTES
 
 
-def parse_href_end_num(selector: SelectorList, logger: Logger) -> int or None:
-    logger.debug('--------------------------parse_href_end_num()')
-    url: str = selector.xpath('@href').get()  # e.g. 'https://hoge.com/huga/114514/'
-    return int(url.split('/')[-2]) if url else None
+def safe_get(array: list, index: int):
+    try:
+        return array[index]
+    except IndexError or TypeError:
+        return None
 
 
-def parse_body(selectors: SelectorList, logger: Logger) -> str:
-    logger.debug('--------------------------parse_body()')
+def chunks(l, n):
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
+
+
+def build_datetime(raw_datetime: str):
+    return datetime.datetime.strptime(raw_datetime, '%Y/%m/%d %H:%M') if raw_datetime else None
+
+
+def validate(obj_name: str, logger: Logger, obj: any) -> any:
+    if not obj:
+        logger.error(f'!!!!PARSE ERROR!!!! {obj_name} is wrong!!!!')
+        raise CloseSpider(f'{obj_name} is null')
+    return obj
+
+
+def parse_href_end_num(obj_name: str, logger: Logger, selector: SelectorList) -> int:
+    logger.info('--------------------------parse_href_end_num()')
+    url: str = validate(obj_name, logger, selector.xpath('@href').get())  # e.g. 'https://hoge.com/huga/114514/'
+    return int(validate(obj_name, logger, safe_get(url.split('/'), -2)))
+
+
+def parse_body(obj_name: str, logger: Logger, selectors: SelectorList) -> str:
+    logger.info('--------------------------parse_body()')
 
     def parse_line(selector: Selector) -> str:
-        # logger.debug('--------------------------parse_line()')
         if selector.css('br'):
             return '\n'
 
-        texts = selector.xpath('text()').getall()
+        texts = validate(f"a line of {obj_name}", logger, selector.xpath('text()').getall())
         if len(texts) == 1:
             return texts[0]
 
@@ -35,6 +66,18 @@ def parse_body(selectors: SelectorList, logger: Logger) -> str:
         return ''.join([''.join(pair) for pair in zip_longest(texts, ruby_texts, fillvalue='')])
 
     return '\n'.join(map(parse_line, selectors))
+
+
+def parse_writer(response: HtmlResponse, contents: Selector, logger: Logger) -> (int, str, str):
+    writer_link_selector = response.css('#novel_footer').xpath('//a[contains(text(), "作者マイページ")]')
+    writer_id = parse_href_end_num('writer ID', logger, writer_link_selector)
+    writer_name_selector = contents.css('.novel_writername')
+    writer_name = writer_nickname = writer_name_selector.css('a::text').get()
+    if not writer_nickname:
+        # e.g. '作者：硬梨菜'
+        nickname_str: str = validate('writer text', logger, writer_name_selector.xpath('text()').get())
+        writer_nickname = validate('writer name', logger, safe_get(nickname_str.split('：'), 1))
+    return writer_id, writer_name, writer_nickname
 
 
 class NovelAllEpisodesSpider(scrapy.Spider):
@@ -58,28 +101,19 @@ class NovelAllEpisodesSpider(scrapy.Spider):
 
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
-        spider = super().from_crawler(crawler, *args, **kwargs)
+        spider: NovelAllEpisodesSpider = super().from_crawler(crawler, *args, **kwargs)
         crawler.signals.connect(spider_error, signal=signals.spider_error)
+        crawler.signals.connect(spider_closed, signal=signals.spider_closed)
         return spider
 
     def parse(self, response: HtmlResponse):
-        self.logger.debug('--------------------------parse()')
+        self.logger.info('--------------------------parse()')
         impression_selector = response.css('#novel_header').xpath('//a[contains(text(), "感想")]')
-        ncode_int = parse_href_end_num(impression_selector, self.logger)
-
         contents_selector = response.css('#novel_contents').xpath('div[1]')
 
-        title = contents_selector.css('.novel_title::text').get()
-
-        writer_link_selector = response.css('#novel_footer').xpath('//a[contains(text(), "作者マイページ")]')
-        writer_id = parse_href_end_num(writer_link_selector, self.logger)
-        writer_name_selector = contents_selector.css('.novel_writername')
-        writer_name = writer_name_selector.css('a::text').get()
-        if not writer_name:
-            writer_str: str = writer_name_selector.xpath('text()').get()  # e.g. '作者：硬梨菜'
-            writer_name = writer_str.split('：')[1]
-
-        story = contents_selector.css('#novel_ex::text').get()
+        ncode_int = parse_href_end_num('ncode_int', self.logger, impression_selector)
+        title = validate('title', self.logger, contents_selector.css('.novel_title::text').get())
+        writer_id, writer_name, writer_nickname = parse_writer(response, contents_selector, self.logger)
 
         novel_raw = {
             'title': title,
@@ -87,57 +121,81 @@ class NovelAllEpisodesSpider(scrapy.Spider):
             'ncode_int': ncode_int,
             'writer_id': writer_id,
             'writer_name': writer_name,
-            'story': story,
+            'writer_nickname': writer_nickname,
         }
 
         indexes_selectors: List[Selector] = contents_selector.css('.index_box > *')
-        if not indexes_selectors:
+        if not indexes_selectors:  # 短編はここまで
             yield NovelItem(is_serial=False, max_episode_num=1, **novel_raw)
             yield self.parse_episode(response)
             return
 
-        latest_episode_selector = indexes_selectors[-1].css('dd > a')
-        max_episode_num = parse_href_end_num(latest_episode_selector, self.logger)
+        # ここから連載作品のみ
 
-        yield NovelItem(is_serial=True, max_episode_num=max_episode_num, **novel_raw)
+        latest_episode_selector = indexes_selectors[-1].css('dd > a')
+        max_episode_num = parse_href_end_num('max_episode_num', self.logger, latest_episode_selector)
+        story = validate('story', self.logger, contents_selector.css('#novel_ex::text').get())
+        yield NovelItem(is_serial=True, max_episode_num=max_episode_num, story=story, **novel_raw)
 
         chapter_num = 0
         episode_num = 0
-        for i_selector in indexes_selectors:
-            self.logger.debug(f'--------------------------chapter{chapter_num} episode{episode_num}')
-            if i_selector.xpath('@class').get() == 'chapter_title':
-                chapter_num += 1
-                chapter_name = i_selector.xpath('text()').get()
-                yield ChapterItem(ncode=self.ncode, number=chapter_num, name=chapter_name)
+        num = ceil(len(indexes_selectors) / 40)
+        for chunk in chunks(indexes_selectors, num):
+            for i_selector in chunk:
+                self.logger.info(f'--------------------------chapter{chapter_num} episode{episode_num + 1}')
 
-            else:
+                # 章だった場合
+                if i_selector.xpath('@class').get() == 'chapter_title':
+                    chapter_num += 1
+                    self.logger.info(f'--------------------------find chapter{chapter_num}')
+                    chapter_name = validate(f'name of chapter{chapter_num}', self.logger, i_selector.xpath('text()').get())
+                    chapter_item = ChapterItem(ncode=self.ncode, number=chapter_num, name=chapter_name)
+                    self.logger.info(f'--------------------------collect chapter{chapter_num}: {chapter_item}')
+                    yield chapter_item
+                    continue
+
+                # 話だった場合
                 episode_num += 1
-                episode_url = i_selector.css('dd > a').xpath('@href').get()  # e.g. '/n6169dz/6/'
-
-                if not episode_url:
-                    self.logger.error('episode url not found')
-                posted_at: str = i_selector.css('dt::text').get()
-                fixed_at: str = i_selector.xpath('//span/@title').get()
-
-                yield scrapy.Request(
-                    url=response.urljoin(episode_url),
-                    callback=self.parse_episode,
-                    cb_kwargs={
-                        'number': episode_num,
-                        'chapter_num': chapter_num if chapter_num != 0 else None,
-                        'posted_at': posted_at.strip('\n'),
-                        'fixed_at': fixed_at[:-3] if fixed_at else None,
-                    }
+                episode_selector = i_selector.css('dd > a')
+                episode_url = validate(
+                    f'url of episode{episode_num}', self.logger,
+                    episode_selector.xpath('@href').get()  # e.g. '/n6169dz/6/'
                 )
+                posted_at_raw: str = validate(
+                    f'posted_at of episode{episode_num}', self.logger,
+                    i_selector.css('dt::text').get()
+                ).strip('\n')
+                fixed_at_text: str = i_selector.css('dt > span').xpath('@title').get()
+                fixed_at_raw = fixed_at_text[:-3] if fixed_at_text and len(fixed_at_text) >= 3 else None
+                posted_at, fixed_at = build_datetime(posted_at_raw), build_datetime(fixed_at_raw)
+
+                # サブタイと更新日時が一致するものがDBになければ更新対象とみなす
+                que = Q(novel__ncode=self.ncode, title=episode_selector.xpath('text()').get(), posted_at=posted_at)
+                if fixed_at:
+                    que &= Q(fixed_at=fixed_at)
+                if not Episode.objects.filter(que).exists():
+                    yield scrapy.Request(
+                        url=response.urljoin(episode_url),
+                        callback=self.parse_episode,
+                        cb_kwargs={
+                            'number': episode_num,
+                            'chapter_num': chapter_num if chapter_num != 0 else None,
+                            'posted_at': posted_at,
+                            'fixed_at': fixed_at,
+                        }
+                    )
 
     def parse_episode(self, response: HtmlResponse, number=1, chapter_num=None, posted_at=None, fixed_at=None):
-        self.logger.debug('--------------------------parse_episode()')
+        self.logger.info('--------------------------parse_episode()')
         contents_selector = response.css('#novel_contents').xpath('div[1]')
 
         title = contents_selector.css('.novel_subtitle::text').get()
-        foreword = parse_body(contents_selector.css('#novel_p > p'), self.logger)
-        body = parse_body(contents_selector.css('#novel_honbun > p'), self.logger)
-        afterword = parse_body(contents_selector.css('#novel_a > p'), self.logger)
+        foreword = parse_body('foreword', self.logger, contents_selector.css('#novel_p > p'))
+        body = validate(
+            'body', self.logger,
+            parse_body('body', self.logger, contents_selector.css('#novel_honbun > p'))
+        )
+        afterword = parse_body('afterword', self.logger, contents_selector.css('#novel_a > p'))
 
         return EpisodeItem(
             ncode=self.ncode,
@@ -150,3 +208,23 @@ class NovelAllEpisodesSpider(scrapy.Spider):
             posted_at=posted_at,
             fixed_at=fixed_at,
         )
+
+
+def spider_closed(spider: NovelAllEpisodesSpider):
+    if spider.ncode != NCODE:
+        return
+
+    novel = Novel.objects.get(ncode=NCODE)
+    min_time = datetime.datetime.now() - datetime.timedelta(minutes=INTERVAL_MINUTES)
+    updates = novel.episodes.filter(posted_at__gt=min_time).values_list('number', 'title')
+    if not updates:
+        return
+
+    auth = tweepy.OAuthHandler(TWITTER_CK, TWITTER_CS)
+    auth.set_access_token(TWITTER_AT, TWITTER_AS)
+    api = tweepy.API(auth)
+    update_texts = list(map(lambda args: f'・{args[1]} ({spider.start_urls[0]}{args[0]}/)\n', updates))
+    try:
+        api.update_status(f"{len(list(update_texts))}話更新されたよ！\n{''.join(update_texts)}")
+    except tweepy.TweepError as e:
+        spider.logger.error(e)

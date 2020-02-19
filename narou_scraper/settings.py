@@ -14,6 +14,8 @@ import sys
 
 import django
 
+from narou_scraping.settings import INTERVAL_MINUTES
+
 
 sys.path.append(os.path.dirname(os.path.abspath('.')))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'narou_scraping.settings'
@@ -27,6 +29,8 @@ NEWSPIDER_MODULE = 'narou_scraper.spiders'
 
 FEED_EXPORT_ENCODING = 'utf-8'
 
+LOG_LEVEL = 'INFO'
+# LOG_LEVEL = 'WARNING'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'narou_scraper (+http://www.yourdomain.com)'
@@ -98,7 +102,7 @@ COOKIES_DEBUG = True
 # Enable and configure HTTP caching (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
 HTTPCACHE_ENABLED = True
-HTTPCACHE_EXPIRATION_SECS = 0
+HTTPCACHE_EXPIRATION_SECS = INTERVAL_MINUTES * 60
 HTTPCACHE_DIR = 'httpcache'
 HTTPCACHE_IGNORE_HTTP_CODES = [302, 503, 404]
 HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'

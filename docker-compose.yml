@@ -5,7 +5,7 @@ services:
     depends_on:
       - nginx
     environment:
-      DOMAINS: 'localhost -> http://nginx:1204/'
+      DOMAINS: 'localhost -> http://nginx:1204/, scrapy.localhost -> http://nginx:1205/'
       # DOMAINS: 'localhost -> http://nginx:1204/, [IP_ADDRESS] -> http://nginx:1204/'
       STAGE: 'local'
       #STAGE: 'production'
@@ -20,11 +20,10 @@ services:
     container_name: narou_nginx
     depends_on:
       - node
-    expose:
-      - "1204"
     hostname: nginx
     ports:
       - "1204:1204"
+      - "1205:1205"
     volumes:
       - "./docker/nginx/:/etc/nginx/"
       - "staticdata:/opt/static/"
@@ -55,14 +54,31 @@ services:
     build:
       context: ./
       dockerfile: ./docker/PythonDockerfile
-    container_name: narou_python
-#    depends_on:
-    expose:
-      - "8000"
-    hostname: python
+    image: narou_python
+
+  django:
+    image: narou_python
+    container_name: narou_django
+    depends_on:
+      - python
+    hostname: django
     ports:
-     - "8000:8000"
+      - "8000:8000"
     command: bash -c "sleep 5; python manage.py makemigrations && python manage.py migrate --run-syncdb && python manage.py collectstatic --noinput && gunicorn narou_scraping.wsgi -b 0.0.0.0:8000"
+    volumes:
+      - .:/src
+      - "staticdata:/opt/static/"
+    working_dir: /src
+
+  scrapy:
+    image: narou_python
+    container_name: narou_scrapy
+    depends_on:
+      - python
+    hostname: scrapy
+    ports:
+      - "6800:6800"
+    command: bash -c "sleep 5; scrapyd && scrapyd-deploy -p narou_scraper"
     volumes:
       - .:/src
       - "staticdata:/opt/static/"

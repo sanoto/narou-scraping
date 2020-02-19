@@ -8,8 +8,8 @@
 from django.core.exceptions import ObjectDoesNotExist
 from scrapy.exceptions import DropItem
 from scrapy import Item, Spider
-from datetime import datetime
 from logging import Logger
+import requests
 
 from narou_scraper.items import TextItem, NovelItem, ChapterItem, EpisodeItem
 from narou.models import Writer, Novel, Chapter, Episode
@@ -34,11 +34,6 @@ def get_model_instance(model, item, **get_kwarg):
     return instance
 
 
-def build_datetime(raw_datetime: str):
-    if raw_datetime:
-        return datetime.strptime(raw_datetime, '%Y/%m/%d %H:%M')
-
-
 class TextPipeline(object):
     def process_item(self, item: TextItem, spider):
         try:
@@ -51,6 +46,36 @@ class TextPipeline(object):
 
 
 class NovelPipeline(object):
+    def drop_by_narou_api(self, response, logger: Logger, **kwargs):
+        logger.error('##### NAROU API ERROR: narou user API is wrong #####')
+        logger.error(response)
+        raise DropItem(kwargs)
+
+    def get_writer(self, writer_id: int, writer_name: str, logger: Logger) -> Writer:
+        writer_qs = Writer.objects.filter(id=writer_id)
+        if writer_qs and writer_name:
+            writer = writer_qs.first()
+            if writer.name == writer_name:
+                return writer
+
+        response = requests.get(
+            'https://api.syosetu.com/userapi/api/',
+            params={'userid': writer_id, 'of': 'n-y', 'out': 'json'}
+        )
+        json: list = response.json()
+        if len(json) < 2:
+            self.drop_by_narou_api(response, logger, id=writer_id, name=writer_name)
+        data: dict = json[1]
+        writer_name, writer_ruby = data.get('name'), data.get('yomikata')
+        if not (writer_name and writer_ruby):
+            self.drop_by_narou_api(response, logger, id=writer_id, name=writer_name)
+
+        writer, created = Writer.objects.update_or_create(
+            id=writer_id,
+            defaults={'name': writer_name, 'ruby': writer_ruby}
+        )
+        return writer
+
     def process_item(self, item: NovelItem, spider: Spider):
         if not isinstance(item, NovelItem):
             return item
@@ -58,16 +83,17 @@ class NovelPipeline(object):
         if 'is_serial' not in item.keys():
             raise DropItem(str(item))
 
-        no_check = None if item['is_serial'] else ['story']
+        no_check = ['writer_name']
+        if not item['is_serial']:
+            no_check += ['story']
         check_null(item, spider.logger, NovelPipeline, no_check)
 
-        writer, created = Writer.objects.update_or_create(
-            id=item.pop('writer_id'),
-            defaults={'name': item.pop('writer_name')}
-        )
         ncode = item.pop('ncode')
         dict_item = dict(item)
-        dict_item['writer'] = writer
+        writer_name = item.get('writer_name')
+        dict_item['writer'] = self.get_writer(item.pop('writer_id'), writer_name, spider.logger)
+        if writer_name:
+            del dict_item['writer_name']
         Novel.objects.update_or_create(ncode=ncode, defaults=dict_item)
 
         return item
@@ -107,8 +133,8 @@ class EpisodePipeline(object):
         if chapter_num:
             dict_item['chapter'] = get_model_instance(Chapter, item, novel=novel, number=chapter_num)
 
-        dict_item['posted_at'] = build_datetime(dict_item.pop('posted_at'))
-        dict_item['fixed_at'] = build_datetime(dict_item.pop('fixed_at'))
+        dict_item['posted_at'] = dict_item.pop('posted_at')
+        dict_item['fixed_at'] = dict_item.pop('fixed_at')
         number = dict_item.pop('number')
         Episode.objects.update_or_create(novel=novel, number=number, defaults=dict_item)
 

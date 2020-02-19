@@ -143,3 +143,8 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 STATIC_ROOT = '/opt/static/'
+
+NCODE = 'n6169dz'
+# NCODE = 'n6009ga'
+# NCODE = 'n6443ga'
+INTERVAL_MINUTES = 720

@@ -3,8 +3,9 @@ Django
 djangorestframework
 django-filter
 gunicorn
-psycopg2
 psycopg2-binary
 Scrapy
 scrapyd
 scrapyd-client
+requests
+tweepy

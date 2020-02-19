@@ -9,12 +9,14 @@ class Cookie(models.Model):
 
 class Writer(models.Model):
     name = models.CharField(verbose_name='名前', max_length=100)
+    ruby = models.CharField(verbose_name='ふりがな', max_length=100)
 
 
 class Novel(models.Model):
     title = models.CharField(verbose_name='タイトル', max_length=500)
     ncode = models.CharField(verbose_name='Nコード', max_length=10, primary_key=True)
     ncode_int = models.IntegerField(verbose_name='数字版Nコード', unique=True, blank=True)
+    writer_nickname = models.CharField(verbose_name='ペンネーム', max_length=100)
     writer = models.ForeignKey(Writer, on_delete=models.CASCADE, related_name='novels', verbose_name='作者')
     story = models.TextField(verbose_name='あらすじ', blank=True, null=True)
     is_serial = models.BooleanField(verbose_name='連載')
@@ -22,7 +24,7 @@ class Novel(models.Model):
 
 
 class Chapter(models.Model):
-    novel = models.OneToOneField(Novel, on_delete=models.CASCADE, related_name='chapter', verbose_name='小説')
+    novel = models.ForeignKey(Novel, on_delete=models.CASCADE, related_name='chapters', verbose_name='小説')
     number = models.IntegerField(verbose_name='章')
     name = models.CharField(verbose_name='名前', max_length=500)
 
