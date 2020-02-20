@@ -3,9 +3,10 @@ Django
 djangorestframework
 django-filter
 gunicorn
-psycopg2-binary
+mysqlclient
 Scrapy
 scrapyd
 scrapyd-client
 requests
 tweepy
+cronpi

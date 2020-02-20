@@ -77,17 +77,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'narou_scraping.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-
-
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
@@ -144,7 +133,7 @@ USE_TZ = False
 STATIC_URL = '/static/'
 STATIC_ROOT = '/opt/static/'
 
-NCODE = 'n6169dz'
-# NCODE = 'n6009ga'
-# NCODE = 'n6443ga'
-INTERVAL_MINUTES = 720
+# NCODE = 'n6169dz'  # シャンフロ
+NCODE = 'n6009ga'  # てすと
+# NCODE = 'n6443ga'  # 適当なの
+INTERVAL_MINUTES = 5

@@ -1,0 +1,5 @@
+FROM narou_python
+CMD sleep 5 && \
+  rm twistd.pid && \
+  scrapyd && \
+  scrapyd-deploy

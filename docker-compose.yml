@@ -44,7 +44,7 @@ services:
 #    command: bash -c "npm install && npm run build && npm run start"
     environment:
       NODE_MAX_OLD_SPACE_SIZE: 12288
-#      BASE_URL: "https://[IP_ADDRESS]"
+#      BASE_URL: "https://narou.chinokafu.dev/"
     volumes:
       - "./nuxt:/src"
       - "dist:/src/dist/"
@@ -57,28 +57,30 @@ services:
     image: narou_python
 
   django:
-    image: narou_python
+    build:
+      context: ./
+      dockerfile: ./docker/DjangoDockerfile
     container_name: narou_django
     depends_on:
       - python
     hostname: django
     ports:
       - "8000:8000"
-    command: bash -c "sleep 5; python manage.py makemigrations && python manage.py migrate --run-syncdb && python manage.py collectstatic --noinput && gunicorn narou_scraping.wsgi -b 0.0.0.0:8000"
     volumes:
       - .:/src
       - "staticdata:/opt/static/"
     working_dir: /src
 
   scrapy:
-    image: narou_python
+    build:
+      context: ./
+      dockerfile: ./docker/ScrapyDockerfile
     container_name: narou_scrapy
     depends_on:
       - python
     hostname: scrapy
     ports:
       - "6800:6800"
-    command: bash -c "sleep 5; scrapyd && scrapyd-deploy -p narou_scraper"
     volumes:
       - .:/src
       - "staticdata:/opt/static/"
