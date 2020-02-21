@@ -211,6 +211,7 @@ class NovelAllEpisodesSpider(scrapy.Spider):
 
 
 def spider_closed(spider: NovelAllEpisodesSpider):
+    spider.logger.error('##########################spider_closed')
     if spider.ncode != NCODE:
         return
 
@@ -224,6 +225,8 @@ def spider_closed(spider: NovelAllEpisodesSpider):
     auth.set_access_token(TWITTER_AT, TWITTER_AS)
     api = tweepy.API(auth)
     update_texts = list(map(lambda args: f'・{args[1]} ({spider.start_urls[0]}{args[0]}/)\n', updates))
+
+    spider.logger.error(f'##########################{len(list(update_texts))}話更新されたよ！\n{"".join(update_texts)}')
     try:
         api.update_status(f"{len(list(update_texts))}話更新されたよ！\n{''.join(update_texts)}")
     except tweepy.TweepError as e:

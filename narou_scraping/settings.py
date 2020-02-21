@@ -133,7 +133,6 @@ USE_TZ = False
 STATIC_URL = '/static/'
 STATIC_ROOT = '/opt/static/'
 
-# NCODE = 'n6169dz'  # シャンフロ
-NCODE = 'n6009ga'  # てすと
+NCODE = 'n6169dz'  # シャンフロ
 # NCODE = 'n6443ga'  # 適当なの
 INTERVAL_MINUTES = 5

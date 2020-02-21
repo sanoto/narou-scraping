@@ -92,7 +92,7 @@ class NovelPipeline(object):
         dict_item = dict(item)
         writer_name = item.get('writer_name')
         dict_item['writer'] = self.get_writer(item.pop('writer_id'), writer_name, spider.logger)
-        if writer_name:
+        if 'writer_name' in dict_item:
             del dict_item['writer_name']
         Novel.objects.update_or_create(ncode=ncode, defaults=dict_item)
 
