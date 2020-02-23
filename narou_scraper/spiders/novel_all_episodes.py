@@ -17,7 +17,7 @@ from narou_scraper.items import NovelItem, ChapterItem, EpisodeItem
 from narou_scraper.handler import spider_error
 from narou.models import Episode, Novel
 from narou_scraping.local_settings import TWITTER_CK, TWITTER_CS, TWITTER_AT, TWITTER_AS
-from narou_scraping.settings import NCODE, INTERVAL_MINUTES
+from narou_scraping.settings import NCODES, INTERVAL_MINUTES
 
 
 def safe_get(array: list, index: int):
@@ -212,22 +212,27 @@ class NovelAllEpisodesSpider(scrapy.Spider):
 
 def spider_closed(spider: NovelAllEpisodesSpider):
     spider.logger.error('##########################spider_closed')
-    if spider.ncode != NCODE:
+    if spider.ncode not in NCODES:
         return
 
-    novel = Novel.objects.get(ncode=NCODE)
+    novels = Novel.objects.filter(ncode__in=NCODES).all()
     min_time = datetime.datetime.now() - datetime.timedelta(minutes=INTERVAL_MINUTES)
-    updates = novel.episodes.filter(posted_at__gt=min_time).values_list('number', 'title')
-    if not updates:
-        return
+    novels_updates = {
+        NCODES[novel.ncode]: novel.episodes.filter(posted_at__gt=min_time).values_list('number', 'title').all()
+        for novel in novels
+    }
+    update_texts = [
+        f'{name}\n' + '\n'.join(map(lambda number, title: f'・{title} ({spider.start_urls[0]}{number}/)', updates))
+        for name, updates in novels_updates.items() if updates
+    ]
 
     auth = tweepy.OAuthHandler(TWITTER_CK, TWITTER_CS)
     auth.set_access_token(TWITTER_AT, TWITTER_AS)
     api = tweepy.API(auth)
-    update_texts = list(map(lambda args: f'・{args[1]} ({spider.start_urls[0]}{args[0]}/)\n', updates))
 
-    spider.logger.error(f'##########################{len(list(update_texts))}話更新されたよ！\n{"".join(update_texts)}')
+    updates_len = sum(map(len, novels_updates))
+    spider.logger.error(f'##########################{updates_len}話更新されたよ！\n{"".join(update_texts)}')
     try:
-        api.update_status(f"{len(list(update_texts))}話更新されたよ！\n{''.join(update_texts)}")
+        api.update_status(f'{updates_len}話更新されたよ！\n' + '\n'.join(update_texts))
     except tweepy.TweepError as e:
         spider.logger.error(e)
