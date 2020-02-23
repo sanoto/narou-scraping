@@ -48,6 +48,17 @@ class Episode(models.Model):
     fixed_at = models.DateTimeField(verbose_name='最終改稿日時', blank=True, null=True)
 
 
+class Word(models.Model):
+    class PartialOf(models.IntegerChoices):
+        BODY = 1, '本文'
+        FOREWORD = 2, 'まえがき'
+        AFTERWORD = 3, 'あとがき'
+
+    episode = models.ForeignKey(Episode, on_delete=models.CASCADE, related_name='words', verbose_name='話')
+    text = models.CharField(verbose_name='セリフ', max_length=1000)
+    partial_of = models.IntegerField(verbose_name='区分', choices=PartialOf.choices)
+
+
 class KeyWord(models.Model):
     name = models.CharField(verbose_name='名前', max_length=100)
 

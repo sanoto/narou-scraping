@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Cookie, Writer, Novel, Chapter, Episode, KeyWord, NovelDetail
+from .models import Cookie, Writer, Novel, Chapter, Episode, Word, KeyWord, NovelDetail
 
 
 @admin.register(Cookie)
@@ -33,6 +33,11 @@ class EpisodeAdmin(admin.ModelAdmin):
         'foreword', 'body', 'afterword',
         'posted_at', 'fixed_at',
     )
+
+
+@admin.register(Word)
+class WordAdmin(admin.ModelAdmin):
+    list_display = ('id', 'episode', 'text')
 
 
 @admin.register(KeyWord)
