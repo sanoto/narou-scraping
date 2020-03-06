@@ -19,6 +19,7 @@ from rest_framework import routers
 
 from users import views as users_views
 from votes import views as votes_views
+from narou import views as narou_views
 
 router = routers.DefaultRouter()
 router.register(r'users', users_views.UserViewSet)
@@ -30,4 +31,5 @@ router.register(r'votes/writer_detail', votes_views.WriterDetailViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('webhook/twitter/', narou_views.TwitterWebhook.as_view())
 ]
