@@ -29,8 +29,8 @@ NEWSPIDER_MODULE = 'narou_scraper.spiders'
 
 FEED_EXPORT_ENCODING = 'utf-8'
 
-LOG_LEVEL = 'INFO'
-# LOG_LEVEL = 'WARNING'
+# LOG_LEVEL = 'INFO'
+LOG_LEVEL = 'WARNING'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'narou_scraper (+http://www.yourdomain.com)'

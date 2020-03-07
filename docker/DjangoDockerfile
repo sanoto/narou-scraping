@@ -3,5 +3,5 @@ CMD service cron start && \
   sleep 5 && \
   python manage.py makemigrations && \
   python manage.py migrate && \
-  python manage.py runserver 0:8000
-#  python manage.py collectstatic --noinput && gunicorn narou_scraping.wsgi -b 0.0.0.0:8000
+#  python manage.py runserver 0:8000
+  python manage.py collectstatic --noinput && gunicorn narou_scraping.wsgi -b 0.0.0.0:8000

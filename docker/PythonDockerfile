@@ -2,5 +2,5 @@ FROM python:3.8-slim
 COPY requirements.txt /
 RUN apt -y update && \
   apt -y upgrade && \
-  apt -y install gcc cron python3-dev default-libmysqlclient-dev && \
+  apt -y install gcc build-essential libssl-dev libxml2-dev libxslt1-dev libffi-dev cron python3-dev default-libmysqlclient-dev && \
   pip install -r requirements.txt

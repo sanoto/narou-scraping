@@ -1,14 +1,14 @@
 version: '2'
 services:
   https-portal:
-    image: steveltn/https-portal:1
+    image: steveltn/https-portal:latest
     depends_on:
       - nginx
     environment:
-      DOMAINS: 'localhost -> http://nginx:1204/, scrapy.localhost -> http://nginx:1205/'
-      # DOMAINS: 'localhost -> http://nginx:1204/, [IP_ADDRESS] -> http://nginx:1204/'
-      STAGE: 'local'
-      #STAGE: 'production'
+      # DOMAINS: 'localhost -> http://nginx:1204/, scrapy.localhost -> http://nginx:1205/'
+      DOMAINS: 'narou.chinokafu.dev -> http://nginx:1204/, scrapy.chinokafu.dev -> http://nginx:1205/'
+      # STAGE: 'local'
+      STAGE: 'production'
     ports:
       - '80:80'
       - '443:443'
@@ -40,11 +40,11 @@ services:
     hostname: node
     ports:
       - "3000:3000"
-    command: bash -c "npm install && npm run dev"
-#    command: bash -c "npm install && npm run build && npm run start"
+    # command: bash -c "npm install && npm run dev"
+    command: bash -c "npm install && npm run build && npm run start"
     environment:
       NODE_MAX_OLD_SPACE_SIZE: 12288
-#      BASE_URL: "https://narou.chinokafu.dev/"
+      BASE_URL: "https://narou.chinokafu.dev/"
     volumes:
       - "./nuxt:/src"
       - "dist:/src/dist/"
