@@ -1,7 +1,8 @@
 version: '2'
 services:
   https-portal:
-    image: steveltn/https-portal:latest
+    # image: steveltn/https-portal:latest
+    image: satackey/steveltn-https-portal:latest
     depends_on:
       - nginx
     environment:
