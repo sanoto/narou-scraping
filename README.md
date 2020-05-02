@@ -7,3 +7,4 @@ djangoで小説家になろうのスクレイピングをする
 ```zsh
 python gen_secretkey.py > narou_scraping/local_settings.py
 ```
+また、scrapy用にtwistd.pidという名前の空ファイルをルートディレクトリに作る必要がある(初回のみ)
