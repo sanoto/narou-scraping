@@ -41,6 +41,26 @@ source ~/.profile
 ```
 
 ### django
+インストール
 ```zsh
 pip install -r requirements.txt
+```
+本番用に書き換え
+```zsh
+vim narou_scraping/local_settings.py
+vim narou_scraping/settings.py
+```
+実行
+```zsh
+python manage.py collectstatic --noinput
+python manage.py makemigrations
+python manage.py migrate
+```
+
+### node
+インストール  
+[ここ](https://github.com/nodesource/distributions)の通りにやる  
+```zsh
+npm install
+npm run build
 ```
