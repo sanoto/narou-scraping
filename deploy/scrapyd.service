@@ -1,0 +1,13 @@
+[Unit]
+Description=Scrapyd daemon
+After=network.target
+ 
+[Service]
+WorkingDirectory=/home/chino/narou-scraping
+ExecStart=/home/chino/.pyenv/shims/scrapyd
+Restart=always
+User=chino
+Group=chino
+ 
+[Install]
+WantedBy=multi-user.target
