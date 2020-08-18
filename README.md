@@ -11,7 +11,12 @@ python gen_secretkey.py > narou_scraping/local_settings.py
 
 ## deploy(raspi)
 ### nginx
+インストール
 [ここ](https://emc-craft.xyz/raspberrypi/nginx-inst03/)の通りにやる
+設定
+```zsh
+sudo ln -sfv ~/narou-scraping/deploy/nginx.conf /etc/nginx/nginx.conf
+```
 
 ### ddclient
 [ここ](https://qiita.com/gorohash/items/8287738ffe47ab52a36f)の通りにやる
@@ -55,6 +60,19 @@ vim narou_scraping/settings.py
 python manage.py collectstatic --noinput
 python manage.py makemigrations
 python manage.py migrate
+```
+```
+sudo ln -sfv ~/narou-scraping/deploy/django.service /etc/systemd/system/django.service
+sudo systemctl enable django
+sudo systemctl start django
+```
+
+### scrapy
+```
+sudo ln -sfv ~/narou-scraping/deploy/scrapyd.service /etc/systemd/system/scrapyd.service
+sudo systemctl enable scrapyd
+sudo systemctl start scrapyd
+scrapyd-deploy
 ```
 
 ### node
