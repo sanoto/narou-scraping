@@ -55,6 +55,27 @@ pip install -r requirements.txt
 vim narou_scraping/local_settings.py
 vim narou_scraping/settings.py
 ```
+`narou_scraping/local_settings.py` の設定例
+```python:narou_scraping/local_settings.py
+DATABASES = {
+    'default': {
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': '######',
+        'USER': '######',
+        'PASSWORD': '######',
+        'HOST': '######',
+        'PORT': '######',
+    }
+}
+
+TWITTER_USER_ID = '######'
+TWITTER_CK = '######'
+TWITTER_CS = '######'
+TWITTER_AT = '######'
+TWITTER_AS = '######'
+```
 実行
 ```zsh
 python manage.py collectstatic --noinput
