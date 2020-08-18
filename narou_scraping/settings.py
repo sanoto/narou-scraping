@@ -24,9 +24,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
+# DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['narou.chinokafu.dev']
+# ALLOWED_HOSTS = ['localhost']
 
 
 # Application definition
@@ -131,7 +133,8 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = '/opt/static/'
+STATIC_ROOT = os.environ['HOME'] + '/opt/static/'
+# STATIC_ROOT = '/opt/static/'
 
 NCODES = {'n6169dz': '本編', 'n6458eg': 'インベントリア'}  # シャンフロ
 # NCODES = ['n6443ga']  # 適当なの

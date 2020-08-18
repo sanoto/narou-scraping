@@ -20,7 +20,7 @@ from narou_scraping.local_settings import TWITTER_USER_ID, TWITTER_CK, TWITTER_C
 def check_update(ncodes: List[str]):
     responses = [
         requests.post(
-            'http://scrapy:6800/schedule.json',
+            'https://scrapy.chinokafu.dev/schedule.json',
             data={'project': 'narou_scraper', 'spider': 'novel_all_episodes', 'ncode': ncode}
         ) for ncode in ncodes
     ]
