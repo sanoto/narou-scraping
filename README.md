@@ -70,6 +70,8 @@ DATABASES = {
     }
 }
 
+PYTHON_PATH = '/home/chino/.pyenv/shims/python'
+
 TWITTER_USER_ID = '######'
 TWITTER_CK = '######'
 TWITTER_CS = '######'
