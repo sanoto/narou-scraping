@@ -4,23 +4,61 @@ from django.dispatch import receiver
 from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, viewsets
 from typing import List
+from urllib.parse import urljoin
 import requests
 import hashlib
 import hmac
 import base64
 import tweepy
 
-from .models import Episode, Word
-from narou_scraping.settings import NCODES
+from .models import Writer, Novel, Chapter, Episode, Word, KeyWord, NovelDetail
+from .serializer import WriterSerializer, NovelSerializer, ChapterSerializer, EpisodeSerializer, WordSerializer, \
+    KeyWordSerializer, NovelDetailSerializer
+from narou_scraping.settings import NCODES, SCRAPY_HOST
 from narou_scraping.local_settings import TWITTER_USER_ID, TWITTER_CK, TWITTER_CS, TWITTER_AT, TWITTER_AS
+
+
+class WriterViewSet(viewsets.ModelViewSet):
+    queryset = Writer.objects.all()
+    serializer_class = WriterSerializer
+
+
+class NovelViewSet(viewsets.ModelViewSet):
+    queryset = Novel.objects.all()
+    serializer_class = NovelSerializer
+
+
+class ChapterViewSet(viewsets.ModelViewSet):
+    queryset = Chapter.objects.all()
+    serializer_class = ChapterSerializer
+
+
+class EpisodeViewSet(viewsets.ModelViewSet):
+    queryset = Episode.objects.all()
+    serializer_class = EpisodeSerializer
+
+
+class WordViewSet(viewsets.ModelViewSet):
+    queryset = Word.objects.all()
+    serializer_class = WordSerializer
+
+
+class KeyWordViewSet(viewsets.ModelViewSet):
+    queryset = KeyWord.objects.all()
+    serializer_class = KeyWordSerializer
+
+
+class NovelDetailViewSet(viewsets.ModelViewSet):
+    queryset = NovelDetail.objects.all()
+    serializer_class = NovelDetailSerializer
 
 
 def check_update(ncodes: List[str]):
     responses = [
         requests.post(
-            'https://scrapy.chinokafu.dev/schedule.json',
+            urljoin(SCRAPY_HOST, 'schedule.json'),
             data={'project': 'narou_scraper', 'spider': 'novel_all_episodes', 'ncode': ncode}
         ) for ncode in ncodes
     ]

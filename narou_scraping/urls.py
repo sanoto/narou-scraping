@@ -23,10 +23,17 @@ from narou import views as narou_views
 
 router = routers.DefaultRouter()
 router.register(r'users', users_views.UserViewSet)
+router.register(r'narou/writers', narou_views.WriterViewSet)
+router.register(r'narou/novels', narou_views.NovelViewSet)
+router.register(r'narou/chapters', narou_views.ChapterViewSet)
+router.register(r'narou/episodes', narou_views.EpisodeViewSet)
+router.register(r'narou/words', narou_views.WordViewSet)
+router.register(r'narou/key_words', narou_views.KeyWordViewSet)
+router.register(r'narou/novel_details', narou_views.NovelDetailViewSet)
 router.register(r'votes/parsers', votes_views.VoteParserViewSet)
 router.register(r'votes/voting_list', votes_views.VotingViewSet)
 router.register(r'votes/votes', votes_views.VoteViewSet)
-router.register(r'votes/writer_detail', votes_views.WriterDetailViewSet)
+router.register(r'votes/writer_details', votes_views.WriterDetailViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

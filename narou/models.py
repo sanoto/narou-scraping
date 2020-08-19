@@ -1,6 +1,7 @@
 from django.db import models
-
 from enum import Enum
+
+from users.models import User
 
 
 class Cookie(models.Model):
@@ -13,9 +14,10 @@ class Writer(models.Model):
 
 
 class Novel(models.Model):
-    title = models.CharField(verbose_name='タイトル', max_length=500)
     ncode = models.CharField(verbose_name='Nコード', max_length=10, primary_key=True)
     ncode_int = models.IntegerField(verbose_name='数字版Nコード', unique=True, blank=True)
+    readers = models.ManyToManyField(User, related_name='novels', verbose_name='読者')
+    title = models.CharField(verbose_name='タイトル', max_length=500)
     writer_nickname = models.CharField(verbose_name='ペンネーム', max_length=100)
     writer = models.ForeignKey(Writer, on_delete=models.CASCADE, related_name='novels', verbose_name='作者')
     story = models.TextField(verbose_name='あらすじ', blank=True, null=True)

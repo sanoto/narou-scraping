@@ -16,7 +16,7 @@ class WriterAdmin(admin.ModelAdmin):
 @admin.register(Novel)
 class NovelAdmin(admin.ModelAdmin):
     list_display = (
-        'title', 'ncode', 'ncode_int', 'writer', 'writer_nickname',
+        'ncode', 'ncode_int', 'title', 'writer', 'writer_nickname',
         'story', 'is_serial', 'max_episode_num', 'detail'
     )
 
@@ -30,9 +30,17 @@ class ChapterAdmin(admin.ModelAdmin):
 class EpisodeAdmin(admin.ModelAdmin):
     list_display = (
         'id', 'novel', 'number', 'chapter', 'title',
-        'foreword', 'body', 'afterword',
-        'posted_at', 'fixed_at',
+        'foreword', 'body', 'afterword', 'posted_at', 'fixed_at',
     )
+
+    def foreword_str(self, obj: Episode):
+        return obj.foreword[:50]
+
+    def body_str(self, obj: Episode):
+        return obj.body[:100]
+
+    def afterword_str(self, obj: Episode):
+        return obj.afterword[:50]
 
 
 @admin.register(Word)

@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand
 import cronpi
 
 from narou_scraping.settings import INTERVAL_MINUTES
+from narou_scraping.local_settings import PYTHON_PATH
 
 
 class Command(BaseCommand):
@@ -11,7 +12,7 @@ class Command(BaseCommand):
         manage_path = Path(settings.BASE_DIR) / 'manage.py'
 
         cronpi.run_custom(
-            f"*/{INTERVAL_MINUTES} * * * * /usr/local/bin/python {manage_path} check_update",
+            f"*/{INTERVAL_MINUTES} * * * * {PYTHON_PATH} {manage_path} check_update",
             isOverwrite=True
         )
 
