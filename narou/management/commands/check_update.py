@@ -7,4 +7,4 @@ from narou_scraping.settings import NCODES
 class Command(BaseCommand):
     def handle(self, *args, **options):
         re = check_update(NCODES.keys())
-        self.stdout.write(re.reason)
+        self.stdout.write(re.text)

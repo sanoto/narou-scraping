@@ -136,7 +136,7 @@ STATIC_URL = '/static/'
 # STATIC_ROOT = os.environ['HOME'] + '/opt/static/'
 STATIC_ROOT = '/opt/static/'
 
-SCRAPY_HOST = 'https://scrapy.chinokafu.dev'
+SCRAPY_HOST = 'http://0.0.0.0:6800'
 
 NCODES = {'n6169dz': '本編', 'n6458eg': 'インベントリア'}  # シャンフロ
 # NCODES = ['n6443ga']  # 適当なの

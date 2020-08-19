@@ -59,7 +59,7 @@ def check_update(ncodes: List[str]):
     responses = [
         requests.post(
             urljoin(SCRAPY_HOST, 'schedule.json'),
-            data={'project': 'narou_scraper', 'spider': 'novel_all_episodes', 'ncode': ncode}
+            params={'project': 'narou_scraper', 'spider': 'novel_all_episodes', 'ncode': ncode}
         ) for ncode in ncodes
     ]
     return responses[0]
