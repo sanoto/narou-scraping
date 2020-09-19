@@ -1,4 +1,3 @@
-twisted
 Django
 djangorestframework
 django-filter
