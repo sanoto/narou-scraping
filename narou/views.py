@@ -13,9 +13,9 @@ import hmac
 import base64
 import tweepy
 
-from .models import Writer, Novel, Chapter, Episode, Word, KeyWord, NovelDetail
-from .serializer import WriterSerializer, NovelSerializer, ChapterSerializer, EpisodeSerializer, WordSerializer, \
-    KeyWordSerializer, NovelDetailSerializer
+from .models import Writer, Novel, Chapter, Episode, Illust, Word, KeyWord, NovelDetail
+from .serializer import WriterSerializer, NovelSerializer, ChapterSerializer, EpisodeSerializer, IllustSerializer, \
+    WordSerializer, KeyWordSerializer, NovelDetailSerializer
 from narou_scraping.settings import NCODES, SCRAPY_HOST
 from narou_scraping.local_settings import TWITTER_USER_ID, TWITTER_CK, TWITTER_CS, TWITTER_AT, TWITTER_AS
 
@@ -38,6 +38,11 @@ class ChapterViewSet(viewsets.ModelViewSet):
 class EpisodeViewSet(viewsets.ModelViewSet):
     queryset = Episode.objects.all()
     serializer_class = EpisodeSerializer
+
+
+class IllustViewSet(viewsets.ModelViewSet):
+    queryset = Illust.objects.all()
+    serializer_class = IllustSerializer
 
 
 class WordViewSet(viewsets.ModelViewSet):

@@ -14,7 +14,7 @@ import sys
 
 import django
 
-from narou_scraping.settings import INTERVAL_MINUTES
+from narou_scraping.settings import INTERVAL_MINUTES, MEDIA_ROOT
 
 
 sys.path.append(os.path.dirname(os.path.abspath('.')))
@@ -31,6 +31,8 @@ FEED_EXPORT_ENCODING = 'utf-8'
 
 LOG_LEVEL = 'INFO'
 # LOG_LEVEL = 'WARNING'
+
+IMAGES_STORE = MEDIA_ROOT + 'illusts'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'narou_scraper (+http://www.yourdomain.com)'

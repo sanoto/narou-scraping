@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
+    'django_cleanup.apps.CleanupConfig'
 ]
 
 MIDDLEWARE = [
@@ -135,6 +136,10 @@ USE_TZ = False
 STATIC_URL = '/static/'
 # STATIC_ROOT = os.environ['HOME'] + '/opt/static/'
 STATIC_ROOT = '/opt/static/'
+
+MEDIA_URL = '/media/'
+# MEDIA_ROOT = os.environ['HOME'] + '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 SCRAPY_HOST = 'http://0.0.0.0:6800'
 

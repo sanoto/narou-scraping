@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Cookie, Writer, Novel, Chapter, Episode, Word, KeyWord, NovelDetail
+from .models import Cookie, Writer, Novel, Chapter, Episode, Illust, Word, KeyWord, NovelDetail
 
 
 @admin.register(Cookie)
@@ -41,6 +41,11 @@ class EpisodeAdmin(admin.ModelAdmin):
 
     def afterword_str(self, obj: Episode):
         return obj.afterword[:50]
+
+
+@admin.register(Illust)
+class IllustAdmin(admin.ModelAdmin):
+    list_display = ('id', 'unique_id', 'episode', 'title')
 
 
 @admin.register(Word)

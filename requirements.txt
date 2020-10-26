@@ -1,6 +1,7 @@
 Django
 djangorestframework
 django-filter
+django-cleanup
 gunicorn
 mysqlclient
 Scrapy
@@ -9,3 +10,4 @@ scrapyd-client
 requests
 tweepy
 cronpi
+Pillow

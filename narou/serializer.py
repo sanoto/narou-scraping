@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Writer, Novel, Chapter, Episode, Word, KeyWord, NovelDetail
+from .models import Writer, Novel, Chapter, Episode, Illust, Word, KeyWord, NovelDetail
 
 
 class WriterSerializer(serializers.ModelSerializer):
@@ -34,6 +34,13 @@ class EpisodeSerializer(serializers.ModelSerializer):
             'id', 'novel', 'number', 'chapter', 'title', 'foreword',
             'body', 'afterword', 'posted_at', 'fixed_at',
         ]
+        extra_kwargs = {'id': {'read_only': True}}
+
+
+class IllustSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Illust
+        fields = ['id', 'unique_id', 'episode', 'title', 'file']
         extra_kwargs = {'id': {'read_only': True}}
 
 

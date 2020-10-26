@@ -6,13 +6,15 @@
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.files import File
 from scrapy.exceptions import DropItem
 from scrapy import Item, Spider
+from scrapy.pipelines.images import ImagesPipeline
 from logging import Logger
 import requests
 
-from narou_scraper.items import TextItem, NovelItem, ChapterItem, EpisodeItem
-from narou.models import Writer, Novel, Chapter, Episode
+from narou_scraper.items import TextItem, NovelItem, ChapterItem, EpisodeItem, IllustItem
+from narou.models import Writer, Novel, Chapter, Episode, Illust
 
 
 def check_null(item: Item, logger: Logger, pipeline_class, no_check_keys: list = None):
@@ -139,3 +141,32 @@ class EpisodePipeline(object):
         Episode.objects.update_or_create(novel=novel, number=number, defaults=dict_item)
 
         return item
+
+
+class IllustPipeline(ImagesPipeline):
+    def item_completed(self, results, item: IllustItem, info):
+        _item = super(IllustPipeline, self).item_completed(results, item, info)
+        check_null(_item, info.spider.logger, IllustPipeline, ['image_urls', 'images'])
+
+        ok, data = results[0]
+        file_path = data['path']
+        if not ok or not file_path:
+            raise DropItem(f'failed illust downloading. {_item["unique_id"]}')
+
+        dict_item = dict(_item)
+        del dict_item['image_urls']
+        del dict_item['images']
+        unique_id = dict_item['unique_id']
+        dict_item['episode'] = get_model_instance(
+            Episode,
+            item,
+            novel__ncode=dict_item.pop('ncode'),
+            number=dict_item.pop('episode_num'),
+        )
+
+        file = File(open(file_path))
+        illust = Illust(**dict_item)
+        illust.file.save(unique_id, file)
+        illust.save()
+
+        return _item

@@ -48,6 +48,14 @@ class Episode(models.Model):
     afterword = models.TextField(verbose_name='あとがき', blank=True, null=True)
     posted_at = models.DateTimeField(verbose_name='投稿日時', blank=True, null=True)
     fixed_at = models.DateTimeField(verbose_name='最終改稿日時', blank=True, null=True)
+    illust_count = models.IntegerField(verbose_name='イラスト数', default=0)
+
+
+class Illust(models.Model):
+    unique_id = models.CharField(verbose_name='識別用文字列', max_length=20, unique=True)
+    episode = models.ForeignKey(Episode, on_delete=models.CASCADE, related_name='illusts', verbose_name='話')
+    title = models.CharField(verbose_name='タイトル', max_length=100)
+    file = models.ImageField(verbose_name='画像', upload_to='illusts/')
 
 
 class Word(models.Model):

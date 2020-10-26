@@ -44,3 +44,13 @@ class EpisodeItem(scrapy.Item):
     afterword = scrapy.Field()  # 無い可能性あり
     posted_at = scrapy.Field()  # 短編だと取得できない
     fixed_at = scrapy.Field()  # 無い可能性あり
+    illust_count = scrapy.Field()
+
+
+class IllustItem(scrapy.Item):
+    unique_id = scrapy.Field()
+    ncode = scrapy.Field()
+    episode_num = scrapy.Field()
+    title = scrapy.Field()
+    image_urls = scrapy.Field()
+    images = scrapy.Field()
