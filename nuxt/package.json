@@ -51,7 +51,7 @@
     "nuxt-property-decorator": "^2.5.0",
     "prettier": "^1.19.1",
     "ramda": "^0.27.0",
-    "stylelint": "^13.1.0",
+    "stylelint": "^15.10.1",
     "stylelint-config-prettier": "^8.0.1",
     "stylelint-prettier": "^1.1.2",
     "vue-jest": "^4.0.0-0",
